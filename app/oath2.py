@@ -1,22 +1,24 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from . import schemas
+from . import schemas, database, models
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from zoneinfo import ZoneInfo
+from sqlalchemy.orm import Session
+from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-SECRET_KEY = "f654f7c0-3d66-4053-af2e-7f0614e34038"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 2
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORYTHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 def create_access_token(data: dict):
     to_encode = data.copy()
 
-    zone = zoneinfo.ZoneInfo("Europe/Moscow")
-    expire = datetime.utcnow(zone) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    zone = ZoneInfo("Europe/Moscow")
+    expire = datetime.now(zone) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({
         "exp": expire
     })
@@ -43,6 +45,11 @@ def verify_access_token(token: str, credential_exception):
     return token_data
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(database.get_db)):
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
-    return verify_access_token(token, credentials_exception)
+
+    token = verify_access_token(token, credentials_exception)
+
+    user = db.query(models.User).filter(models.User.id == token.id).first()
+
+    return user
