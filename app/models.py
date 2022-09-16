@@ -16,6 +16,7 @@ class Post(Base):
                         nullable=False, server_default=text('now()'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
                      nullable=False)
+    phone_number = Column(String, nullable=True)
 
     owner = relationship("User")
 
