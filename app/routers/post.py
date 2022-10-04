@@ -1,6 +1,6 @@
 from .. import models, oath2, utils
 from ..schemas import PostCreate, PostResponse, PostOut
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import func

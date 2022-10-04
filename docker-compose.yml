@@ -1,0 +1,31 @@
+version: "3"
+services:
+  api:
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/usr/src/app:ro
+    command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      - DATABASE_HOSTNAME=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_PASSWORD=56411
+      - DATABASE_USERNAME=postgres
+      - DATABASE_NAME=fastApiDatabase
+      - SECRET_KEY=f654f7c0-3d66-4053-af2e-7f0614e34038
+      - ALGORYTHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=56411
+      - POSTGRES_DB=fastApiDatabase
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
